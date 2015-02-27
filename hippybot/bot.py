@@ -69,7 +69,7 @@ class HippyBot(JabberBot):
 
         self._at_name = u"@%s " % (config['connection']['nickname'].replace(" ",""),)
         self._at_short_name = u"@%s " % (config['connection']['nickname']
-                                        .split(' ')[0].lower(),)
+                                        .split(' ')[0],)
 
         plugins = config.get('plugins', {}).get('load', [])
         if plugins:
@@ -79,7 +79,7 @@ class HippyBot(JabberBot):
 
         self.load_plugins()
 
-        self.log.setLevel(logging.INFO)
+        self.log.setLevel(logging.DEBUG)
 
     def from_bot(self, mess):
         """Helper method to test if a message was sent from this bot.
@@ -125,7 +125,6 @@ class HippyBot(JabberBot):
         message = unicode(mess.getBody()).strip()
         if not message:
             return
-
         at_msg, message = self.to_bot(message)
 
         if len(self._all_msg_handlers) > 0:
@@ -209,7 +208,6 @@ class HippyBot(JabberBot):
                 lazy_reload(self._plugins[name])
             module = do_import(path)
             self._plugins[name] = module
-
             # If the module has a function matching the module/command name,
             # then just use that
             command = getattr(module, name, None)
@@ -228,9 +226,9 @@ class HippyBot(JabberBot):
                     if ismethod(m) and getattr(m, '_jabberbot_command', False):
                         if command in RESERVED_COMMANDS:
                             self.log.error('Plugin "%s" attempted to register '
-                                        'reserved command "%s", skipping..' % (
-                                            plugin, command
-                                        ))
+                                           'reserved command "%s", skipping..' % (
+                                               plugin, command
+                                           ))
                             continue
                         self.rewrite_docstring(m)
                         name = getattr(m, '_jabberbot_command_name', False)
@@ -240,9 +238,9 @@ class HippyBot(JabberBot):
                     if ismethod(m) and getattr(m, '_jabberbot_content_command', False):
                         if command in RESERVED_COMMANDS:
                             self.log.error('Plugin "%s" attempted to register '
-                                        'reserved command "%s", skipping..' % (
-                                            plugin, command
-                                        ))
+                                           'reserved command "%s", skipping..' % (
+                                               plugin, command
+                                           ))
                             continue
                         self.rewrite_docstring(m)
                         name = getattr(m, '_jabberbot_command_name', False)
@@ -252,18 +250,19 @@ class HippyBot(JabberBot):
                 # Check for commands that don't need to be directed at
                 # hippybot, e.g. they can just be said in the channel
                 self._global_commands.extend(getattr(plugin,
-                                                'global_commands', []))
+                                                     'global_commands', []))
                 # Check for "special commands", e.g. those that can't be
                 # represented in a python method name
                 self._command_aliases.update(getattr(plugin,
-                                                'command_aliases', {}))
+                                                     'command_aliases', {}))
 
                 # Check for handlers for all XMPP message types,
                 # this can be used for low-level checking of XMPP messages
                 self._all_msg_handlers.extend(getattr(plugin,
-                                                'all_msg_handlers', []))
+                                                      'all_msg_handlers', []))
             else:
                 funcs = [(name, command)]
+                content_funcs = []
 
             for command, func in funcs:
                 setattr(self, command, func)

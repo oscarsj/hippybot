@@ -3,8 +3,8 @@ from jabberbot import botcmd
 
 def directcmd(func):
     @wraps(func)
-    def wrapper(self, origin, args):
-        message = func(self, origin, args)
+    def wrapper(origin, args):
+        message = func(origin, args)
         username = unicode(origin.getFrom()).split('/')[1].replace(" ","")
         return u'@%s %s' % (username, message)
     return botcmd(wrapper)
